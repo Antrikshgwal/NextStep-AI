@@ -1,17 +1,17 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import HeroSection from "@/components/Hero";
-import { features } from "@/data/features";
-import { Card, CardContent } from "@/components/ui/card";
-import { howItWorks } from "@/data/howItWorks";
-import { testimonial } from "@/data/testimonial";
-import { faqs } from "@/data/faqs";
+import { Button } from "../components/ui/button";
+import HeroSection from "../components/Hero";
+import { features } from "../data/features";
+import { Card, CardContent } from "../components";
+import { howItWorks } from "../data/howItWorks";
+import { testimonial } from "../data/testimonial";
+import { faqs } from "../data/faqs";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../components/ui/accordion";
 import Link from "next/link";
 import { ArrowRight} from "lucide-react";
 
@@ -182,9 +182,9 @@ export default function Home() {
       </section>
       <section className="w-full">
         <div className="mx-auto py-24 rounded-lg gradient">
-          <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-3xl mx-auto">
+          <div className=" items-center justify-center text-center space-y-4 max-w-3xl mx-auto">
                         <h2 className="text-3xl font-bold tracking-tighter text-primary-foreground md:text-4xl lg:text-5xl">
-Ready to Accelerate your career?
+Ready to Explore
             </h2>
             <p className="mx-auto max-w-[600] text-primary-foreground/80 md:text-xl">
 Join thousands of individual who are advancing their career with AI-powered guidance

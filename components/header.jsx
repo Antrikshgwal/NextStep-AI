@@ -11,8 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { checkUser } from '@/lib/checkUser'
+} from "../components/ui/dropdown-menu"
+import { checkUser } from '../lib/checkUser'
 
 const Header = async () => {
   await checkUser();
@@ -62,7 +62,7 @@ className='h-20 py-1 w-auto object-contain'/>
       <span>Interview</span>
       </Link>
     </DropdownMenuItem>
-    
+
   </DropdownMenuContent>
 </DropdownMenu>
 </SignedIn>
