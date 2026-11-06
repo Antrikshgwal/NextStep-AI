@@ -16,21 +16,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { format } from "date-fns";
 
 export default function PerformanceChart({ assessments }) {
-  const [chartData, setChartData] = useState([]);
-
-  useEffect(() => {
-    if (assessments) {
-      const formattedData = assessments.map((assessment) => ({
+  const chartData = useMemo(
+    () =>
+      (assessments || []).map((assessment) => ({
         date: format(new Date(assessment.createdAt), "MMM dd"),
         score: assessment.quizScore,
-      }));
-      setChartData(formattedData);
-    }
-  }, [assessments]);
+      })),
+    [assessments]
+  );
 
   return (
     <Card>

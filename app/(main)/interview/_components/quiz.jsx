@@ -37,6 +37,8 @@ export default function Quiz() {
 
   useEffect(() => {
     if (quizData) {
+      // Quiz data arrives asynchronously and must initialize answer state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnswers(new Array(quizData.length).fill(null));
     }
   }, [quizData]);
