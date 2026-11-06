@@ -97,7 +97,14 @@ Jobmate is a comprehensive AI-powered career development platform built with **N
 
    # Google Gemini AI
    GEMINI_API_KEY=your_gemini_api_key
+
+   # Inngest (optional for local development; required for a hosted Inngest app)
+   # INNGEST_EVENT_KEY=your_inngest_event_key
+   # INNGEST_SIGNING_KEY=your_inngest_signing_key
    ```
+
+   You can copy [`.env.example`](./.env.example) to `.env.local` and replace
+   the placeholders with your own values. Never commit `.env.local` or API keys.
 
 4. **Set up the database**
    ```bash

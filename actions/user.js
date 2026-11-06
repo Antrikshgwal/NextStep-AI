@@ -2,6 +2,19 @@
 import { auth } from "@clerk/nextjs/server"
 import { db } from '@/lib/prisma'
 import { generateAIInsights } from "./dashboard";
+import { checkUser } from "@/lib/checkUser";
+import { after } from "next/server";
+import { revalidatePath } from "next/cache";
+
+const defaultIndustryInsights = {
+    salaryRanges: [],
+    growthRate: 0,
+    demandLevel: "MEDIUM",
+    topSkills: [],
+    marketOutlook: "NEUTRAL",
+    keyTrends: ["Insights are being generated."],
+    recommendedSkills: [],
+};
 
 export async function updateUser(data){
 const {userId} = await auth();
@@ -18,51 +31,57 @@ if(!user){
 }
 
 try{
-    const result  = await db.$transaction(
-async (tx) =>{
-    // Find if industry exists
-    let industryInsight = await tx.industryInsight.findUnique({
-where :{
-    industry : data.industry,
-}
+    let industryInsight = await db.industryInsight.findUnique({
+        where: { industry: data.industry },
     });
 
-    // If industry doesn't exist, create it with default value for now, will change it later
-    if(!industryInsight){
+    const shouldGenerateInsights = !industryInsight;
 
-        const insights = await generateAIInsights(data.industry);
-         industryInsight = await db.industryInsight.create({
-            data:{
-                industry : data.industry,
-                ...insights,
-                nextUpdate : new Date(Date.now() + 7*24*60*60*1000), // 7 days from now
+    const result = await db.$transaction(async (tx) => {
+        industryInsight = await tx.industryInsight.upsert({
+            where: { industry: data.industry },
+            create: {
+                industry: data.industry,
+                ...defaultIndustryInsights,
+                nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+            update: {},
+        });
 
+        const updatedUser = await tx.user.update({
+            where: { id: user.id },
+            data: {
+                industryInsight: {
+                    connect: { industry: data.industry },
+                },
+                Skills: data.skills,
+                experience: data.experience,
+                bio: data.bio,
+            },
+        });
 
+        return { updatedUser, industryInsight };
+    });
+
+    if (shouldGenerateInsights) {
+        after(async () => {
+            try {
+                const insights = await generateAIInsights(data.industry);
+                await db.industryInsight.update({
+                    where: { industry: data.industry },
+                    data: {
+                        ...insights,
+                        lastUpdated: new Date(),
+                        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    },
+                });
+                revalidatePath("/dashboard");
+            } catch (error) {
+                console.error("Error refreshing industry insights:", error);
             }
-        })
+        });
     }
 
-    // Update user data
-const updatedUser = await tx.user.update({
-    where:{
-        id:user.id,
-    },
-    data:{
-        industryInsights: {
-            connect: { industry: data.industry }, // Connect to existing industry
-        },
-        Skills : data.skills,
-        experience : data.experience,
-        bio : data.bio,
-    },
-})
-return {
-     updatedUser,
-    industryInsight
-};
-}, {
-    timeout: 10000,
-});
 return {success: true, ...result };
     }catch(error){
         console.error("Error updating user and industry", error.message);
@@ -80,21 +99,8 @@ export async function getUserOnboardingStatus() {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    const user = await db.user.findUnique({
-      where: { clerkUserID: userId },
-    });
-
-    if (!user) throw new Error("User not found");
-
     try {
-      const user = await db.user.findUnique({
-        where: {
-          clerkUserID: userId,
-        },
-        select: {
-          industry: true,
-        },
-      });
+      const user = await checkUser();
 
       return {
         isOnboarded: !!user?.industry,
@@ -104,4 +110,3 @@ export async function getUserOnboardingStatus() {
       throw new Error("Failed to check onboarding status");
     }
   }
-
