@@ -2,7 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from './ui/button'
-import { SignedIn, SignInButton, SignUpButton, UserButton, SignedOut } from '@clerk/nextjs'
+import { UserButton } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import { ChevronDown, FileText, GraduationCap, LayoutDashboard, PenBox, StarsIcon } from 'lucide-react'
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
 import { checkUser } from '../lib/checkUser'
 
 const Header = async () => {
+  const { userId } = await auth();
   await checkUser();
 
   return (
@@ -26,7 +28,8 @@ const Header = async () => {
 className='h-20 py-1 w-auto object-contain'/>
 </Link>
 <div className='flex items-center space-x-2 md:space-x-4'>
-  <SignedIn>
+  {userId ? (
+    <>
     <Link href='/dashboard'>
     <Button variant="outline">
       <LayoutDashboard className='h-4 w-4'/>
@@ -65,16 +68,18 @@ className='h-20 py-1 w-auto object-contain'/>
 
   </DropdownMenuContent>
 </DropdownMenu>
-</SignedIn>
-              <SignedOut>
-<SignInButton>
+    </>
+  ) : (
+    <>
+<Link href="/sign-in">
 <Button variant="outline">Sign In</Button>
-  </SignInButton>
-  <SignUpButton>
+</Link>
+<Link href="/sign-up">
                   <Button variant="outline">Sign Up</Button>
-                </SignUpButton>
-        </SignedOut>
-            <SignedIn>
+</Link>
+    </>
+  )}
+            {userId && (
               <UserButton appearance={
                 {
                   elements:{
@@ -86,7 +91,7 @@ className='h-20 py-1 w-auto object-contain'/>
               }
               afterSignOutUrl='/'
               />
-            </SignedIn>
+            )}
 </div>
 </nav>
     </header>
