@@ -205,7 +205,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Antriksh Gwal**
 - GitHub: [@Antrikshgwal](https://github.com/Antrikshgwal)
-- Made with 💗 for the developer community
 
 ## 🙏 Acknowledgments
 

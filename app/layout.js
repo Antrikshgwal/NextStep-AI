@@ -14,6 +14,10 @@ const inter = Inter({
 export const metadata = {
   title: "NextStep AI",
   description: "AI-Powered Career Platform ",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -41,7 +45,6 @@ export default function RootLayout({ children }) {
         {/*footer*/}
         <footer className="bg-muted opacity-50 py-12">
           <div className="container mx-auto px-4 text-center text-gray-200">
-          <p>Made with 💗 by Antriksh </p>
           </div>
           </footer>
           </ThemeProvider>
