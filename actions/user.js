@@ -3,18 +3,9 @@ import { auth } from "@clerk/nextjs/server"
 import { db } from '@/lib/prisma'
 import { generateAIInsights } from "./dashboard";
 import { checkUser } from "@/lib/checkUser";
+import { defaultIndustryInsights } from "@/lib/industry-insights";
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
-
-const defaultIndustryInsights = {
-    salaryRanges: [],
-    growthRate: 0,
-    demandLevel: "MEDIUM",
-    topSkills: [],
-    marketOutlook: "NEUTRAL",
-    keyTrends: ["Insights are being generated."],
-    recommendedSkills: [],
-};
 
 export async function updateUser(data){
 const {userId} = await auth();

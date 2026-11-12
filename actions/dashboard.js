@@ -3,6 +3,9 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateContent } from "@/lib/gemini";
+import { defaultIndustryInsights } from "@/lib/industry-insights";
+import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export const generateAIInsights = async (industry) => {
   const prompt = `
@@ -45,27 +48,49 @@ export async function getIndustryInsights() {
 
   const user = await db.user.findUnique({
     where: { clerkUserID: userId },
-    include: {
-      industryInsight: true,
-    },
+    select: { id: true, industry: true, industryInsight: true },
   });
 
   if (!user) throw new Error("User not found");
+  if (!user.industry) throw new Error("User industry is not configured");
 
-  // If no insights exist, generate them
+  const industryInsight = await db.industryInsight.upsert({
+    where: { industry: user.industry },
+    create: {
+      industry: user.industry,
+      ...defaultIndustryInsights,
+      nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+    update: {},
+  });
+
   if (!user.industryInsight) {
-    const insights = await generateAIInsights(user.industry);
-
-    const industryInsight = await db.industryInsight.create({
+    await db.user.update({
+      where: { id: user.id },
       data: {
-        industry: user.industry,
-        ...insights,
-        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        industryInsight: {
+          connect: { industry: user.industry },
+        },
       },
     });
 
-    return industryInsight;
+    after(async () => {
+      try {
+        const insights = await generateAIInsights(user.industry);
+        await db.industryInsight.update({
+          where: { industry: user.industry },
+          data: {
+            ...insights,
+            lastUpdated: new Date(),
+            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+        });
+        revalidatePath("/dashboard");
+      } catch (error) {
+        console.error("Error refreshing industry insights:", error);
+      }
+    });
   }
 
-  return user.industryInsight;
+  return industryInsight;
 }
